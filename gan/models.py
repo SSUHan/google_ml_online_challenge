@@ -161,11 +161,11 @@ class CnnDiscriminator(BaseModel):
     self.D_W3 = tf.Variable(xavier_init([3, 3, 128, 256]), name='d/w3')
     self.D_b3 = tf.Variable(tf.zeros(shape=[256]), name='d/b3')
 
-    self.D_W4 = tf.Variable(xavier_init([12544, 1024]), name='d/w4')
-    self.D_b4 = tf.Variable(tf.zeros(shape=[1024]), name='d/b4')
+    self.D_W4 = tf.Variable(xavier_init([12544, 1]), name='d/w4')
+    self.D_b4 = tf.Variable(tf.zeros(shape=[1]), name='d/b4')
 
-    self.D_W5 = tf.Variable(xavier_init([1024, 1]), name='d/w5')
-    self.D_b5 = tf.Variable(tf.zeros(shape=[1]), name='d/b5')
+    # self.D_W5 = tf.Variable(xavier_init([1024, 1]), name='d/w5')
+    # self.D_b5 = tf.Variable(tf.zeros(shape=[1]), name='d/b5')
 
     # self.D_W3 = tf.Variable(xavier_init([h2_size, 1]), name='d/w3')
     # self.D_b3 = tf.Variable(tf.zeros(shape=[1]), name='d/b3')
@@ -182,15 +182,14 @@ class CnnDiscriminator(BaseModel):
     net = conv2d(net, self.D_W3, self.D_b3)
     net = maxpool2d(net, k=2)
     
-    # print(net)
-    # exit()
+    print(net)
     # print(net.get_shape())
     # print("as_list : ", self.D_W2.get_shape().as_list()[0])
     print("as list : ", self.D_W4.get_shape().as_list())
   
     net = tf.reshape(net, [-1, self.D_W4.get_shape().as_list()[0]])
-    net = tf.nn.relu(tf.matmul(net, self.D_W4) + self.D_b4)
-    logits = tf.matmul(net, self.D_W5) + self.D_b5
+    # net = tf.nn.relu(tf.matmul(net, self.D_W4) + self.D_b4)
+    logits = tf.matmul(net, self.D_W4) + self.D_b4
     # logits = slim.fully_connected(
     #     net, num_classes-1, activation_fn=None,
     #     weights_regularizer=slim.l2_regularizer(l2_penalty))
@@ -201,4 +200,4 @@ class CnnDiscriminator(BaseModel):
     return {"logits": logits, "predictions": predictions}
 
   def get_variables(self):
-    return [self.D_W1, self.D_W2, self.D_W3,self.D_W4,self.D_W5, self.D_b1, self.D_b2, self.D_b3, self.D_b4, self.D_b5]
+    return [self.D_W1, self.D_W2, self.D_W3, self.D_W4, self.D_b1, self.D_b2, self.D_b3, self.D_b4]

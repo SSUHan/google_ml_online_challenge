@@ -5,6 +5,7 @@ output_model2/
 output_model3/
 output_model4/
 output_model5/
+output_*/
 train_record/
 validation_record/
 y/

@@ -186,7 +186,9 @@ class CnnDiscriminator(BaseModel):
     # exit()
     # print(net.get_shape())
     # print("as_list : ", self.D_W2.get_shape().as_list()[0])
-    net = tf.reshape(net, [self.D_W4.get_shape().as_list()[0]], self.D_W4.get_shape().as_list()[1])
+    print("as list : ", self.D_W4.get_shape().as_list())
+  
+    net = tf.reshape(net, [-1, self.D_W4.get_shape().as_list()[0]])
     net = tf.nn.relu(tf.matmul(net, self.D_W4) + self.D_b4)
     logits = tf.matmul(net, self.D_W5) + self.D_b5
     # logits = slim.fully_connected(
@@ -199,4 +201,4 @@ class CnnDiscriminator(BaseModel):
     return {"logits": logits, "predictions": predictions}
 
   def get_variables(self):
-    return [self.D_W1, self.D_W2, self.D_W3, self.D_b1, self.D_b2, self.D_b3]
+    return [self.D_W1, self.D_W2, self.D_W3,self.D_W4,self.D_W5, self.D_b1, self.D_b2, self.D_b3, self.D_b4, self.D_b5]

@@ -23,6 +23,16 @@ def xavier_init(size):
   xavier_stddev = 1. / tf.sqrt(in_dim / 2.)
   return tf.random_normal(shape=size, stddev=xavier_stddev)
 
+def conv2d(x, W, b, strides=1):
+  x = tf.nn.conv2d(x, W, strides=[1, strides, strides, 1], padding='SAME')
+  x = tf.nn.bias_add(x, b)
+  return tf.nn.relu(x)
+
+
+def maxpool2d(x, k=2):
+  return tf.nn.max_pool(x, ksize=[1, k, k, 1], strides=[1, k, k, 1],
+                          padding='SAME')
+
 """Contains the base class for models."""
 class BaseModel(object):
   """Inherit from this class when implementing new models."""
@@ -76,3 +86,105 @@ class SampleDiscriminator(BaseModel):
 
   def get_variables(self):
     return [self.D_W1, self.D_W2, self.D_b1, self.D_b2]
+
+"""
+Junsu Lee GAN Model
+"""
+class TwoHiddenLayerGenerator(BaseModel):
+  def __init__(self):
+    self.noise_input_size = 100
+  
+  def create_model(self, output_size, **unused_params):
+    h1_size = 258
+    h2_size = 128
+    
+    self.G_W1 = tf.Variable(xavier_init([self.noise_input_size, h1_size]), name='g/w1')
+    self.G_b1 = tf.Variable(tf.zeros(shape=[h1_size]), name='g/b1')
+
+    self.G_W2 = tf.Variable(xavier_init([h1_size, h2_size]), name='g/w2')
+    self.G_b2 = tf.Variable(tf.zeros(shape=[h2_size]), name='g/b2')
+
+    self.G_W3 = tf.Variable(xavier_init([h2_size, output_size]), name='g/w3')
+    self.G_b3 = tf.Variable(tf.zeros(shape=[output_size]), name='g/b3')
+
+  def run_model(self, model_input, is_training=True, **unused_params):
+    net = tf.nn.relu(tf.matmul(model_input, self.G_W1) + self.G_b1)
+    net = tf.nn.relu(tf.matmul(net, self.G_W2) + self.G_b2)
+    output = tf.nn.sigmoid(tf.matmul(net, self.G_W3) + self.G_b3)
+    return {"output": output}
+
+  def get_variables(self):
+    return [self.G_W1, self.G_W2, self.G_W3, self.G_b1, self.G_b2, self.G_b3]
+
+class TwoHiddenDiscriminator(BaseModel):
+  def create_model(self, input_size, **unused_params):
+    h1_size = 258
+    h2_size = 128
+
+    self.D_W1 = tf.Variable(xavier_init([input_size, h1_size]), name='d/w1')
+    self.D_b1 = tf.Variable(tf.zeros(shape=[h1_size]), name='d/b1')
+
+    self.D_W2 = tf.Variable(xavier_init([h1_size, h2_size]), name='d/w2')
+    self.D_b2 = tf.Variable(tf.zeros(shape=[h2_size]), name='d/b2')
+
+    self.D_W3 = tf.Variable(xavier_init([h2_size, 1]), name='d/w3')
+    self.D_b3 = tf.Variable(tf.zeros(shape=[1]), name='d/b3')
+
+  def run_model(self, model_input, is_training=True, **unused_params):
+
+    net = tf.nn.relu(tf.matmul(model_input, self.D_W1) + self.D_b1)
+    net = tf.nn.relu(tf.matmul(net, self.D_W2) + self.D_b2)
+
+    logits = tf.matmul(net, self.D_W3) + self.D_b3
+    predictions = tf.nn.sigmoid(logits)
+    return {"logits": logits, "predictions": predictions}
+
+  def get_variables(self):
+    return [self.D_W1, self.D_W2, self.D_W3, self.D_b1, self.D_b2, self.D_b3]
+
+
+class CnnDiscriminator(BaseModel):
+  def create_model(self, input_size, **unused_params):
+    h1_size = 258
+    h2_size = 128
+
+    num_classes = 2
+    l2_penalty=1e-8
+
+    # print("input_size : ", input_size
+    self.D_W1 = tf.Variable(tf.random_normal([5, 5, 1, 32]), name='d/w1')
+    self.D_b1 = tf.Variable(tf.zeros(shape=[32]), name='d/b1')
+
+    self.D_W2 = tf.Variable(tf.random_normal([5, 5, 32, 64]), name='d/w2')
+    self.D_b2 = tf.Variable(tf.zeros(shape=[64]), name='d/b2')
+
+    self.D_W3 = tf.Variable(tf.random_normal([10816, 1]), name='d/w3')
+    self.D_b3 = tf.Variable(tf.zeros(shape=[1]), name='d/b3')
+
+    # self.D_W3 = tf.Variable(xavier_init([h2_size, 1]), name='d/w3')
+    # self.D_b3 = tf.Variable(tf.zeros(shape=[1]), name='d/b3')
+
+  def run_model(self, model_input, is_training=True, **unused_params):
+
+    x = tf.reshape(model_input, shape=[-1, 50, 50, 1])
+    net = conv2d(x, self.D_W1, self.D_b1)
+    net = maxpool2d(net, k=2)
+
+    net = conv2d(net, self.D_W2, self.D_b2)
+    net = maxpool2d(net, k=2)
+    
+    # print(net.get_shape())
+    # print("as_list : ", self.D_W2.get_shape().as_list()[0])
+    net = tf.reshape(net, [-1, self.D_W3.get_shape().as_list()[0]])
+    logits = tf.matmul(net, self.D_W3) + self.D_b3
+    # logits = slim.fully_connected(
+    #     net, num_classes-1, activation_fn=None,
+    #     weights_regularizer=slim.l2_regularizer(l2_penalty))
+
+    predictions = tf.nn.sigmoid(logits)
+    # logits = tf.matmul(model_input, self.D_W1) + self.D_b1
+    # predictions = tf.nn.sigmoid(logits)
+    return {"logits": logits, "predictions": predictions}
+
+  def get_variables(self):
+    return [self.D_W1, self.D_W2, self.D_W3, self.D_b1, self.D_b2, self.D_b3]

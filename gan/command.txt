@@ -1,0 +1,25 @@
+python train.py --train_dir="output_model" --train_data_pattern="train_record/train.*" --max_steps="5000" --export_generated_images --start_new_model
+
+python train.py --train_dir="output_model" --train_data_pattern="train_record/train.*" --max_steps="5000" --export_generated_images=True
+
+
+python eval.py --train_dir="output_model" --eval_data_pattern="validation_record/validation.*" 
+
+
+
+
+#####
+
+python train.py --train_dir="output_model3" --train_data_pattern="train_record/train.*" --max_steps="50000" --image_dir="out3/" --export_generated_images=True  --generator_model="SampleGenerator" --discriminator_model="TwoHiddenDiscriminator"
+
+
+##
+python eval.py --train_dir="output_model3" --eval_data_pattern="validation_record/validation.*" --generator_model="SampleGenerator" --discriminator_model="TwoHiddenDiscriminator"
+
+###
+step:9000 -> INFO:tensorflow:epoch/eval number 12030 | Avg_D_acc_on_G: 0.985 | Avg_D_acc_on_real: 0.779 | Avg_G_loss: 3.589 | Avg_D_loss: 0.594
+
+#####
+
+python train.py --train_dir="output_model4" --train_data_pattern="train_record/train.*" --max_steps="50000" --image_dir="out4/" --export_generated_images=True --generator_model="SampleGenerator" --discriminator_model="CnnDiscriminator" --start_new_model=True
+

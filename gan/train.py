@@ -344,6 +344,7 @@ def build_graph(reader,
 
           D_var = discriminator_model.get_variables()
           D_gradients = optimizer.compute_gradients(D_loss, var_list=D_var)
+          # D_gradients = optimizer.compute_gradients(D_loss)
           tower_D_gradients.append(D_gradients)
  
           G_var = generator_model.get_variables()

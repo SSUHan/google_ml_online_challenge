@@ -152,13 +152,13 @@ class CnnDiscriminator(BaseModel):
     l2_penalty=1e-8
 
     # print("input_size : ", input_size
-    self.D_W1 = tf.Variable(tf.random_normal([3, 3, 1, 64]), name='d/w1')
+    self.D_W1 = tf.Variable(xavier_init([3, 3, 1, 64]), name='d/w1')
     self.D_b1 = tf.Variable(tf.zeros(shape=[64]), name='d/b1')
 
-    self.D_W2 = tf.Variable(tf.random_normal([3, 3, 64, 128]), name='d/w2')
+    self.D_W2 = tf.Variable(xavier_init([3, 3, 64, 128]), name='d/w2')
     self.D_b2 = tf.Variable(tf.zeros(shape=[128]), name='d/b2')
 
-    self.D_W3 = tf.Variable(tf.random_normal([21632, 1]), name='d/w3')
+    self.D_W3 = tf.Variable(xavier_init([21632, 1]), name='d/w3')
     self.D_b3 = tf.Variable(tf.zeros(shape=[1]), name='d/b3')
 
     # self.D_W3 = tf.Variable(xavier_init([h2_size, 1]), name='d/w3')

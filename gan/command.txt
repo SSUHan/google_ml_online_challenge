@@ -32,3 +32,8 @@ python train.py --train_dir="output_model4" --train_data_pattern="train_record/t
 
 python train.py --train_dir="output_model5" --train_data_pattern="train_record/train.*" --max_steps="50000" --image_dir="out5/" --export_generated_images=True --generator_model="SampleGenerator" --discriminator_model="CnnDiscriminator" --start_new_model=True --base_learning_rate=0.0001
 
+python train.py --train_dir="output_model5" --train_data_pattern="train_record/train.*" --max_steps="50000" --image_dir="out5/" --generator_model="SampleGenerator" --discriminator_model="CnnDiscriminator" --base_learning_rate=0.0001
+
+## 
+python eval.py --train_dir="output_model5" --eval_data_pattern="validation_record/validation.*" --generator_model="SampleGenerator" --discriminator_model="CnnDiscriminator"
+
